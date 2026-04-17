@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FaceRec Pro | Modern Intelligence</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="logo">FaceRec Pro</div>
+        <ul class="nav-links">
+            <li class="nav-item active" data-tab="live">
+                <span>Live Feed</span>
+            </li>
+            <li class="nav-item" data-tab="training">
+                <span>Training Center</span>
+            </li>
+            <li class="nav-item" data-tab="log">
+                <span>Recognition Log</span>
+            </li>
+            <li class="nav-item" data-tab="settings">
+                <span>Settings</span>
+            </li>
+        </ul>
+        <div style="margin-top: auto; padding: 1rem; background: var(--glass); border-radius: 12px;">
+            <div style="font-size: 0.75rem; color: var(--text-muted);">Backend Status</div>
+            <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; color: var(--success);">
+                <span style="width: 8px; height: 8px; border-radius: 50%; background: var(--success);"></span>
+                FastAPI Running
+            </div>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <!-- Live Feed Section -->
+        <section id="tab-live" class="dashboard-section active">
+            <div class="header">
+                <h1>Live Recognition Feed</h1>
+                <div style="display: flex; gap: 1rem;">
+                    <div class="btn btn-secondary" style="color: var(--success);">● Live</div>
+                    <div class="btn btn-secondary"><span id="enrolled-count">0</span> Enrolled</div>
+                </div>
+            </div>
+
+            <div class="stats-row">
+                <div class="stat-card">
+                    <div class="stat-label">Faces detected</div>
+                    <div class="stat-value" id="faces-detected-count">0</div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">this frame</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Avg confidence</div>
+                    <div class="stat-value" id="avg-confidence">0%</div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">known faces</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Recognitions today</div>
+                    <div class="stat-value">38</div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">since 9:00 AM</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">System Sensitivity</div>
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <input type="range" id="tolerance-slider" min="0.1" max="0.9" step="0.05" value="0.6" style="flex: 1;">
+                        <span id="tolerance-value" style="font-weight: 700; width: 30px;">0.6</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="content-grid">
+                <div style="display: flex; flex-direction: column; gap: 1rem;">
+                    <div class="feed-container">
+                        <img id="video-stream" src="/video_feed" alt="Video feed">
+                        <canvas id="canvas-overlay" class="canvas-overlay"></canvas>
+                    </div>
+                    <div class="feed-controls btn-secondary" style="border-radius: 20px;">
+                        <button class="btn btn-secondary" id="webcam-btn">Webcam</button>
+                        <button class="btn btn-secondary" id="upload-video-btn">Upload Video</button>
+                    </div>
+                </div>
+
+                <div class="log-container">
+                    <div class="log-header">
+                        <h3>Recognition Log</h3>
+                        <button class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.75rem;">Export CSV</button>
+                    </div>
+                    <div class="log-list" id="recognition-log">
+                        <!-- Items populated by JS -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Training Center Section -->
+        <section id="tab-training" class="dashboard-section">
+            <h1>Training Center</h1>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                <div class="stat-card">
+                    <h3>Enroll New Face</h3>
+                    <p style="color: var(--text-muted); margin: 1rem 0;">Upload a clear photo or use your webcam.</p>
+                    
+                    <div id="enroll-webcam-container" style="display: none; flex-direction: column; gap: 1rem; margin-bottom: 2rem;">
+                        <div style="position: relative; border-radius: 12px; overflow: hidden; background: black; aspect-ratio: 4/3;">
+                            <video id="enroll-video" autoplay muted playsinline style="width: 100%; height: 100%; object-fit: cover;"></video>
+                            <canvas id="enroll-snapshot-canvas" style="display: none;"></canvas>
+                        </div>
+                        <button class="btn btn-primary" id="capture-snapshot-btn">Capture & Enroll</button>
+                    </div>
+
+                    <form id="enroll-form" style="display: flex; flex-direction: column; gap: 1rem;">
+                        <input type="text" id="enroll-name" placeholder="Person's Full Name" required 
+                               style="background: var(--bg); border: 1px solid var(--border); color: white; padding: 0.75rem; border-radius: 8px;">
+                        
+                        <div style="display: flex; gap: 1rem;">
+                            <button type="button" class="btn btn-secondary" id="toggle-webcam-enroll" style="flex: 1;">Use Webcam</button>
+                            <div style="flex: 1; position: relative;">
+                                <input type="file" id="enroll-file" accept="image/*" style="opacity: 0; position: absolute; inset: 0; cursor: pointer;">
+                                <button type="button" class="btn btn-secondary" style="width: 100%;">Upload File</button>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" id="submit-enroll-file" class="btn btn-primary" style="display: none;">Start Training</button>
+                    </form>
+                    <div id="enroll-status" style="margin-top: 1rem;"></div>
+                </div>
+
+                <div class="log-container" style="height: fit-content;">
+                    <div class="log-header">
+                        <h3>Enrolled Persons</h3>
+                        <div id="enrolled-count-badge" class="btn btn-secondary" style="padding: 0.2rem 0.6rem; font-size: 0.75rem;">0 Total</div>
+                    </div>
+                    <div id="enrolled-list" style="padding: 1rem; display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 1rem;">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="/static/script.js"></script>
+</body>
+</html>
