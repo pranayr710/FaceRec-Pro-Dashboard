@@ -72,6 +72,3 @@ face_recognition ./known_people/ ./unknown_pictures/
 ## 📜 License
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🤝 Thanks
-*   **Davis King** (@nulhom) for creating dlib and the trained models.
-*   **Adam Geitgey** for the original `face_recognition` library.

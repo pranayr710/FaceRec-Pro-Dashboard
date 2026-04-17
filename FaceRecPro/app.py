@@ -1,4 +1,5 @@
 from fastapi import FastAPI, UploadFile, File, Form, Request
+import face_recognition
 from fastapi.responses import HTMLResponse, StreamingResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 import uvicorn
@@ -11,13 +12,18 @@ from face_engine import FaceEngine
 import asyncio
 
 app = FastAPI(title="FaceRec Pro API")
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
 # Ensure database is initialized
 db.init_db()
 
 engine = FaceEngine()
 
 # Mount static files
-app.mount("/static", StaticFiles(directory="FaceRecPro/static"), name="static")
+app.mount("/static", StaticFiles(directory=os.path.join(BASE_DIR, "static")), name="static")
+
+# Configuration
+show_landmarks = False
 
 @app.get("/", response_class=HTMLResponse)
 async def read_index():
@@ -77,6 +83,36 @@ async def get_stats():
         "status": "Healthy"
     }
 
+@app.post("/toggle_landmarks")
+async def toggle_landmarks(active: bool = Form(...)):
+    global show_landmarks
+    show_landmarks = active
+    return {"status": "success", "show_landmarks": show_landmarks}
+
+@app.post("/api/compare")
+async def api_compare(file1: UploadFile = File(...), file2: UploadFile = File(...)):
+    try:
+        res, err = engine.compare_two_faces(await file1.read(), await file2.read())
+        if err:
+            return JSONResponse(status_code=400, content={"message": err})
+        return res
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"message": str(e)})
+
+@app.post("/api/landmarks")
+async def api_landmarks(file: UploadFile = File(...)):
+    try:
+        contents = await file.read()
+        image = face_recognition.load_image_file(io.BytesIO(contents))
+        # Convert to BGR for consistent processing if needed, but engine takes BGR
+        # Wait, engine.get_landmarks takes BGR (OpenCV format)
+        # face_recognition.load_image_file returns RGB
+        bgr = image[:,:,::-1]
+        res = engine.get_landmarks(bgr)
+        return {"landmarks": res}
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"message": str(e)})
+
 import threading
 import time
 
@@ -84,79 +120,139 @@ import time
 class VideoEngine:
     def __init__(self, engine):
         self.engine = engine
-        self.cap = cv2.VideoCapture(0)
-        self.frame = None
+        self.cap = None
+        self.active_index = -1
+        
+        # Camera Auto-Scanner
+        for i in [0, 1, 2, 3, 4]:
+            test_cap = cv2.VideoCapture(i)
+            if test_cap.isOpened():
+                success, _ = test_cap.read()
+                if success:
+                    self.cap = test_cap
+                    self.active_index = i
+                    break
+                else:
+                    test_cap.release()
+            else:
+                test_cap.release()
+        
+        if not self.cap:
+             self.cap = cv2.VideoCapture(0)
+
+        self.raw_frame = None
+        self.display_frame = None
         self.results = []
+        self.landmarks = []
         self.running = True
         self.lock = threading.Lock()
         
-        # Start background thread
-        self.thread = threading.Thread(target=self._update, daemon=True)
-        self.thread.start()
-        print("Video Engine started in background thread.")
+        # 1. Capture Thread (Highest Priority)
+        self.cap_thread = threading.Thread(target=self._capture_loop, daemon=True)
+        # 2. AI Worker Thread (Lower Priority)
+        self.ai_thread = threading.Thread(target=self._ai_worker, daemon=True)
+        # 3. Render Thread (Maintains Smoothness)
+        self.render_thread = threading.Thread(target=self._render_loop, daemon=True)
+        
+        # Start background threads
+        self.cap_thread.start()
+        self.ai_thread.start()
+        self.render_thread.start()
 
-    def _update(self):
-        print("DEBUG: Thread loop starting...")
-        try:
-            frame_count = 0
-            while self.running:
-                success, raw_frame = self.cap.read()
-                if not success:
-                    error_frame = np.zeros((480, 640, 3), dtype=np.uint8)
-                    cv2.putText(error_frame, "CAMERA ERROR: Read Failed", (50, 240), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
-                    with self.lock:
-                        self.frame = error_frame
-                    time.sleep(1)
-                    continue
-                
-                frame_count += 1
-                
-                if frame_count % 4 == 0 or not self.results:
-                    small_frame = cv2.resize(raw_frame, (0, 0), fx=0.5, fy=0.5)
-                    new_results = self.engine.recognize(small_frame)
-                    
-                    if not new_results:
-                        new_results = self.engine.recognize(raw_frame, scale=1.0)
-
-                    with self.lock:
-                        self.results = new_results
-
+    def _capture_loop(self):
+        """Continuously pulls raw frames from camera"""
+        while self.running:
+            success, frame = self.cap.read()
+            if success:
                 with self.lock:
-                    current_results = self.results
-                
-                display_frame = raw_frame.copy()
+                    self.raw_frame = frame
+            time.sleep(0.01)
+
+    def _ai_worker(self):
+        """Asynchronously processes AI onto the latest frame"""
+        while self.running:
+            with self.lock:
+                frame_to_process = self.raw_frame.copy() if self.raw_frame is not None else None
+            
+            if frame_to_process is not None:
+                try:
+                    # 1. Recognition Scan
+                    # Use a smaller frame for faster response if possible
+                    small = cv2.resize(frame_to_process, (0, 0), fx=0.5, fy=0.5)
+                    new_res = self.engine.recognize(small)
+                    if not new_res:
+                        new_res = self.engine.recognize(frame_to_process, scale=1.0)
+                        
+                    # 2. Landmark Scan (Only if enabled)
+                    new_landmarks = []
+                    if show_landmarks:
+                        new_landmarks = self.engine.get_landmarks(frame_to_process)
+
+                    with self.lock:
+                        self.results = new_res
+                        self.landmarks = new_landmarks
+                except Exception:
+                    pass
+            
+            time.sleep(0.1) # Throttle AI to ~10 FPS to save CPU
+
+    def _render_loop(self):
+        """Merges latest raw frame and latest AI results at 30 FPS"""
+        while self.running:
+            with self.lock:
+                base_frame = self.raw_frame.copy() if self.raw_frame is not None else None
+                current_results = self.results
+                current_landmarks = self.landmarks
+            
+            if base_frame is not None:
+                # 1. Draw Recognition Boxes
                 for res in current_results:
                     top, right, bottom, left = res['bbox']
                     is_known = res['name'] != "Unknown"
                     color = (0, 255, 0) if is_known else (0, 165, 255)
-                    
-                    cv2.rectangle(display_frame, (left, top), (right, bottom), color, 3)
-                    cv2.rectangle(display_frame, (left, top - 35), (right, top), color, cv2.FILLED)
-                    cv2.putText(display_frame, f"{res['name']}", (left + 6, top - 8), 
+                    cv2.rectangle(base_frame, (left, top), (right, bottom), color, 3)
+                    cv2.rectangle(base_frame, (left, top - 35), (right, top), color, cv2.FILLED)
+                    cv2.putText(base_frame, f"{res['name']}", (left + 6, top - 8), 
                                 cv2.FONT_HERSHEY_DUPLEX, 0.7, (0, 0, 0), 2)
                 
+                # 2. Draw Pre-computed Landmarks
+                if show_landmarks:
+                    for face_landmarks in current_landmarks:
+                        for feature_name, points in face_landmarks.items():
+                            for point in points:
+                                cv2.circle(base_frame, point, 2, (0, 255, 255), -1)
+
                 with self.lock:
-                    self.frame = display_frame
-                
-                time.sleep(0.01)
-        except Exception as e:
-            print(f"CRITICAL THREAD ERROR: {e}")
-            import traceback
-            traceback.print_exc()
+                    self.display_frame = base_frame
+            
+            time.sleep(0.03) # ~33 FPS
 
     def get_frame(self):
         with self.lock:
-            return self.frame
+            return self.display_frame
 
 video_engine = VideoEngine(engine)
 
 def gen_frames():
     while True:
         frame = video_engine.get_frame()
-        if frame is not None:
+        if frame is None:
+            # Fallback loading frame
+            frame = np.zeros((480, 640, 3), dtype=np.uint8)
+            cv2.putText(frame, "BIOMETRIC ENGINE INITIALIZING...", (60, 240), 
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
             ret, buffer = cv2.imencode('.jpg', frame, [cv2.IMWRITE_JPEG_QUALITY, 80])
+            if ret:
+                yield (b'--frame\r\n'
+                       b'Content-Type: image/jpeg\r\n\r\n' + buffer.tobytes() + b'\r\n')
+            time.sleep(0.5) 
+            continue
+        
+        ret, buffer = cv2.imencode('.jpg', frame, [cv2.IMWRITE_JPEG_QUALITY, 80])
+        if ret:
             yield (b'--frame\r\n'
                    b'Content-Type: image/jpeg\r\n\r\n' + buffer.tobytes() + b'\r\n')
+        
         time.sleep(0.03) # ~30 FPS
 
 @app.get("/video_feed")

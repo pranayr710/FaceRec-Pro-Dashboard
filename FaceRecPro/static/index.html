@@ -3,140 +3,198 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FaceRec Pro | Modern Intelligence</title>
+    <title>FaceRec Pro | Multi-Biometric Intelligence</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/static/style.css">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --bg: #0d0e1b;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --text-base: #f8fafc;
+            --text-muted: #94a3b8;
+            --success: #10b981;
+            --warning: #f59e0b;
+        }
+    </style>
 </head>
 <body>
-    <aside class="sidebar">
-        <div class="logo">FaceRec Pro</div>
-        <ul class="nav-links">
-            <li class="nav-item active" data-tab="live">
-                <span>Live Feed</span>
-            </li>
-            <li class="nav-item" data-tab="training">
-                <span>Training Center</span>
-            </li>
-            <li class="nav-item" data-tab="log">
-                <span>Recognition Log</span>
-            </li>
-            <li class="nav-item" data-tab="settings">
-                <span>Settings</span>
-            </li>
-        </ul>
-        <div style="margin-top: auto; padding: 1rem; background: var(--glass); border-radius: 12px;">
-            <div style="font-size: 0.75rem; color: var(--text-muted);">Backend Status</div>
-            <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; color: var(--success);">
-                <span style="width: 8px; height: 8px; border-radius: 50%; background: var(--success);"></span>
-                FastAPI Running
+    <div class="sidebar">
+        <div class="logo">
+            <div class="logo-icon">F</div>
+            FaceRec Pro
+        </div>
+        <div class="nav-item active" data-tab="tab-dashboard">Live Recognition</div>
+        <div class="nav-item" data-tab="tab-compare">Comparison Lab</div>
+        <div class="nav-item" data-tab="tab-landmarks">Feature Expert</div>
+        <div class="nav-item" data-tab="tab-training">Training Center</div>
+        <div class="nav-item" data-tab="tab-history">Activity Log</div>
+        
+        <div style="margin-top: auto; padding-top: 2rem;">
+            <div class="stat-card" style="padding: 1rem; background: var(--card-bg); border-radius: 12px; border: 1px solid var(--glass-border);">
+                <div class="stat-label" style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem;">System Status</div>
+                <div style="display: flex; align-items: center; gap: 0.5rem; color: var(--success); font-weight: 600; font-size: 0.85rem;">
+                    <div style="width: 8px; height: 8px; border-radius: 50%; background: var(--success);"></div>
+                    FastAPI Healthy
+                </div>
             </div>
         </div>
-    </aside>
+    </div>
 
     <main class="main-content">
-        <!-- Live Feed Section -->
-        <section id="tab-live" class="dashboard-section active">
+        <!-- Live Recognition Tab -->
+        <section id="tab-dashboard" class="tab-content active">
             <div class="header">
-                <h1>Live Recognition Feed</h1>
+                <div>
+                    <h1 style="margin: 0; font-size: 2rem; font-weight: 800; letter-spacing: -0.025em;">Live Recognition Feed</h1>
+                    <p style="color: var(--text-muted); margin-top: 0.25rem;">Real-time biometric analysis & stream tracking</p>
+                </div>
                 <div style="display: flex; gap: 1rem;">
-                    <div class="btn btn-secondary" style="color: var(--success);">● Live</div>
-                    <div class="btn btn-secondary"><span id="enrolled-count">0</span> Enrolled</div>
-                </div>
-            </div>
-
-            <div class="stats-row">
-                <div class="stat-card">
-                    <div class="stat-label">Faces detected</div>
-                    <div class="stat-value" id="faces-detected-count">0</div>
-                    <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">this frame</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">Avg confidence</div>
-                    <div class="stat-value" id="avg-confidence">0%</div>
-                    <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">known faces</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">Recognitions today</div>
-                    <div class="stat-value">38</div>
-                    <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">since 9:00 AM</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">System Sensitivity</div>
-                    <div style="display: flex; align-items: center; gap: 1rem;">
-                        <input type="range" id="tolerance-slider" min="0.1" max="0.9" step="0.05" value="0.6" style="flex: 1;">
-                        <span id="tolerance-value" style="font-weight: 700; width: 30px;">0.6</span>
+                    <div class="stat-card" style="padding: 0.75rem 1.25rem;">
+                        <div class="stat-label">Enrolled</div>
+                        <div id="enrolled-count-stat" class="stat-value" style="font-size: 1.5rem;">0</div>
                     </div>
                 </div>
             </div>
 
-            <div class="content-grid">
-                <div style="display: flex; flex-direction: column; gap: 1rem;">
-                    <div class="feed-container">
-                        <img id="video-stream" src="/video_feed" alt="Video feed">
-                        <canvas id="canvas-overlay" class="canvas-overlay"></canvas>
+            <div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 2rem; margin-top: 2rem;">
+                <div class="glass-card" style="padding: 1.5rem; position: relative;">
+                    <div style="border-radius: 12px; overflow: hidden; background: #000; position: relative; aspect-ratio: 16/9;">
+                        <img id="video-feed" src="/video_feed" alt="Live stream" style="width: 100%; height: 100%; object-fit: cover;">
+                        <div style="position: absolute; top: 1rem; right: 1rem; background: rgba(0,0,0,0.6); padding: 0.4rem 0.8rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600;">
+                            <span style="color: var(--success);">● LIVE</span>
+                        </div>
                     </div>
-                    <div class="feed-controls btn-secondary" style="border-radius: 20px;">
-                        <button class="btn btn-secondary" id="webcam-btn">Webcam</button>
-                        <button class="btn btn-secondary" id="upload-video-btn">Upload Video</button>
+                    
+                    <div style="margin-top: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
+                        <div style="display: flex; gap: 1rem;">
+                            <label class="btn" style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; background: rgba(255,255,255,0.05); padding: 0.5rem 1rem; border-radius: 12px; border: 1px solid var(--glass-border);">
+                                <input type="checkbox" id="landmark-toggle"> 
+                                <span style="font-weight: 600; font-size: 0.85rem;">Show Landmarks</span>
+                            </label>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 1rem; background: rgba(255,255,255,0.05); padding: 0.5rem 1rem; border-radius: 20px;">
+                            <span style="font-size: 0.85rem; color: var(--text-muted);">Sensitivity:</span>
+                            <input type="range" id="tolerance-slider" min="0.1" max="0.9" step="0.05" value="0.6" style="width: 100px;">
+                            <span id="tolerance-value" style="font-weight: 700; width: 30px; font-size: 0.85rem;">0.6</span>
+                        </div>
                     </div>
                 </div>
 
-                <div class="log-container">
-                    <div class="log-header">
-                        <h3>Recognition Log</h3>
-                        <button class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.75rem;">Export CSV</button>
+                <div class="glass-card" style="padding: 1.5rem; display: flex; flex-direction: column;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                        <h3 style="margin: 0;">Detection Log</h3>
+                        <button class="btn" onclick="exportCSV()" style="font-size: 0.75rem; padding: 0.4rem 0.8rem; border: 1px solid var(--glass-border);">Export CSV</button>
                     </div>
-                    <div class="log-list" id="recognition-log">
-                        <!-- Items populated by JS -->
+                    <div id="history-log" style="flex: 1; overflow-y: auto; max-height: 500px; display: flex; flex-direction: column; gap: 0.75rem;">
+                        <!-- Populate via JS -->
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- Training Center Section -->
-        <section id="tab-training" class="dashboard-section">
-            <h1>Training Center</h1>
-            
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
-                <div class="stat-card">
-                    <h3>Enroll New Face</h3>
-                    <p style="color: var(--text-muted); margin: 1rem 0;">Upload a clear photo or use your webcam.</p>
-                    
-                    <div id="enroll-webcam-container" style="display: none; flex-direction: column; gap: 1rem; margin-bottom: 2rem;">
-                        <div style="position: relative; border-radius: 12px; overflow: hidden; background: black; aspect-ratio: 4/3;">
-                            <video id="enroll-video" autoplay muted playsinline style="width: 100%; height: 100%; object-fit: cover;"></video>
-                            <canvas id="enroll-snapshot-canvas" style="display: none;"></canvas>
-                        </div>
-                        <button class="btn btn-primary" id="capture-snapshot-btn">Capture & Enroll</button>
-                    </div>
-
-                    <form id="enroll-form" style="display: flex; flex-direction: column; gap: 1rem;">
-                        <input type="text" id="enroll-name" placeholder="Person's Full Name" required 
-                               style="background: var(--bg); border: 1px solid var(--border); color: white; padding: 0.75rem; border-radius: 8px;">
-                        
-                        <div style="display: flex; gap: 1rem;">
-                            <button type="button" class="btn btn-secondary" id="toggle-webcam-enroll" style="flex: 1;">Use Webcam</button>
-                            <div style="flex: 1; position: relative;">
-                                <input type="file" id="enroll-file" accept="image/*" style="opacity: 0; position: absolute; inset: 0; cursor: pointer;">
-                                <button type="button" class="btn btn-secondary" style="width: 100%;">Upload File</button>
-                            </div>
-                        </div>
-                        
-                        <button type="submit" id="submit-enroll-file" class="btn btn-primary" style="display: none;">Start Training</button>
-                    </form>
-                    <div id="enroll-status" style="margin-top: 1rem;"></div>
+        <!-- Comparison Lab Tab -->
+        <section id="tab-compare" class="tab-content">
+            <div class="header">
+                <div>
+                    <h1 style="margin: 0; font-size: 2rem; font-weight: 800;">Comparison Lab</h1>
+                    <p style="color: var(--text-muted);">Biometric identity verification and distance analysis</p>
                 </div>
+            </div>
+            
+            <div class="glass-card" style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; padding: 3rem; margin-top: 2rem; text-align: center;">
+                <div class="upload-zone" id="compare-zone-1" style="border: 2px dashed var(--glass-border); border-radius: 20px; height: 350px; display: flex; align-items: center; justify-content: center; position: relative;">
+                    <input type="file" id="compare-input-1" hidden accept="image/*">
+                    <img id="compare-preview-1" style="max-width: 100%; max-height: 100%; display: none; border-radius: 12px;">
+                    <div id="compare-placeholder-1">
+                        <div style="font-size: 2.5rem; margin-bottom: 1rem;">👤</div>
+                        <p>Upload Identity A</p>
+                    </div>
+                </div>
+                <div class="upload-zone" id="compare-zone-2" style="border: 2px dashed var(--glass-border); border-radius: 20px; height: 350px; display: flex; align-items: center; justify-content: center; position: relative;">
+                    <input type="file" id="compare-input-2" hidden accept="image/*">
+                    <img id="compare-preview-2" style="max-width: 100%; max-height: 100%; display: none; border-radius: 12px;">
+                    <div id="compare-placeholder-2">
+                        <div style="font-size: 2.5rem; margin-bottom: 1rem;">👤</div>
+                        <p>Upload Identity B</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="text-align: center; margin-top: 2.5rem;">
+                <button id="compare-btn" class="btn btn-primary" style="padding: 1rem 4rem; font-size: 1.1rem; border-radius: 12px;">Run Verification Scan</button>
+                <div id="compare-result-container" style="margin-top: 3rem; display: none;">
+                    <div id="compare-badge" style="display: inline-block; padding: 0.5rem 1.5rem; border-radius: 30px; font-weight: 800; font-size: 1.25rem; margin-bottom: 1rem;">MATCH FOUND</div>
+                    <div id="compare-details" style="color: var(--text-muted); font-size: 1.1rem;"></div>
+                </div>
+            </div>
+        </section>
 
-                <div class="log-container" style="height: fit-content;">
-                    <div class="log-header">
-                        <h3>Enrolled Persons</h3>
-                        <div id="enrolled-count-badge" class="btn btn-secondary" style="padding: 0.2rem 0.6rem; font-size: 0.75rem;">0 Total</div>
+        <!-- Feature Expert Tab -->
+        <section id="tab-landmarks" class="tab-content">
+            <div class="header">
+                <div>
+                    <h1 style="margin: 0; font-size: 2rem; font-weight: 800;">Feature Expert</h1>
+                    <p style="color: var(--text-muted);">Surgical landmark extraction and geometric mapping</p>
+                </div>
+            </div>
+            <div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 2rem; margin-top: 2rem;">
+                <div class="glass-card" style="padding: 1.5rem; text-align: center;">
+                    <div id="landmark-upload-zone" style="border: 2px dashed var(--glass-border); border-radius: 20px; height: 500px; display: flex; align-items: center; justify-content: center; position: relative; background: #000;">
+                        <input type="file" id="landmark-input" hidden accept="image/*">
+                        <canvas id="landmark-canvas" style="position: absolute; inset: 0; pointer-events: none; width: 100%; height: 100%;"></canvas>
+                        <img id="landmark-preview" style="max-width: 100%; max-height: 100%; display: none;">
+                        <div id="landmark-placeholder">
+                            <div style="font-size: 3rem; margin-bottom: 1rem;">🎯</div>
+                            <p>Drop image for biometric extraction</p>
+                        </div>
                     </div>
-                    <div id="enrolled-list" style="padding: 1rem; display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 1rem;">
-                        <!-- Populated by JS -->
+                </div>
+                <div class="glass-card" style="padding: 1.5rem; display: flex; flex-direction: column;">
+                    <h3 style="margin-top: 0;">Biometric Map Data</h3>
+                    <div id="landmark-output" style="flex: 1; background: rgba(0,0,0,0.3); border-radius: 12px; padding: 1rem; font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: #10b981; overflow-y: auto;">
+                        // Waiting for image input...
                     </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Training Center Tab -->
+        <section id="tab-training" class="tab-content">
+            <h1>Training Center</h1>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 2rem;">
+                <!-- Re-implementing the robust training UI -->
+                <div class="glass-card" style="padding: 2rem;">
+                    <h3>Enroll New Identity</h3>
+                    <div id="enroll-preview-container" style="background: #000; border-radius: 12px; height: 300px; display: flex; align-items: center; justify-content: center; margin: 1.5rem 0; overflow: hidden;">
+                        <img id="enroll-preview" style="max-width: 100%; max-height: 100%; display: none;">
+                        <p id="enroll-placeholder" style="color: var(--text-muted);">No image selected</p>
+                    </div>
+                    <input type="text" id="enroll-name" class="input-field" placeholder="Target Identity Name" style="width: 100%; margin-bottom: 1.5rem;">
+                    <div style="display: flex; gap: 1rem;">
+                        <button id="enroll-btn" class="btn btn-primary" style="flex: 1;">Enroll Identity</button>
+                        <button id="capture-remote-btn" class="btn" style="flex: 1; border: 1px solid var(--glass-border);">Remote Capture</button>
+                    </div>
+                </div>
+                <div class="glass-card" style="padding: 2rem;">
+                    <h3>Enrolled Database</h3>
+                    <div id="enrolled-list" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 1rem; margin-top: 1.5rem;">
+                        <!-- Database entries -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Activity Log Tab -->
+        <section id="tab-history" class="tab-content">
+            <h1>Activity Log</h1>
+            <div class="glass-card" style="padding: 2rem; margin-top: 2rem;">
+                <div id="full-history-log" style="display: flex; flex-direction: column; gap: 1rem;">
+                    <!-- Full log list -->
                 </div>
             </div>
         </section>

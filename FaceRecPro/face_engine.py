@@ -72,7 +72,8 @@ class FaceEngine:
         enhanced_bgr = cv2.cvtColor(limg, cv2.COLOR_LAB2BGR)
         
         # Convert BGR (OpenCV) to RGB (face_recognition)
-        rgb_frame = enhanced_bgr[:, :, ::-1]
+        # CRITICAL: Use ascontiguousarray to ensure the C++ dlib engine gets a linear memory buffer
+        rgb_frame = np.ascontiguousarray(enhanced_bgr[:, :, ::-1])
         
         # Multi-scale detection for maximum sensitivity
         face_locations = face_recognition.face_locations(rgb_frame, number_of_times_to_upsample=1)
@@ -91,10 +92,6 @@ class FaceEngine:
             if self.known_face_encodings:
                 face_distances = face_recognition.face_distance(self.known_face_encodings, face_encoding)
                 best_match_index = np.argmin(face_distances)
-                min_dist = face_distances[best_match_index]
-                
-                print(f"DEBUG: Face distance to {self.known_face_names[best_match_index]} is {min_dist:.4f}")
-
                 if min_dist <= self.tolerance:
                     name = self.known_face_names[best_match_index]
                     face_id = self.known_face_ids[best_match_index]
@@ -114,4 +111,39 @@ class FaceEngine:
             # Log to history (throttled in app.py generally, but we can do it here simple)
             # Actually, we should probably only log to DB if it's a "significant" detection to avoid DB bloat
             
+            
         return results
+
+    def get_landmarks(self, image_np):
+        """
+        Returns facial landmarks for all faces in image
+        """
+        # Convert BGR (OpenCV) to RGB (face_recognition)
+        rgb_frame = image_np[:, :, ::-1]
+        landmarks_list = face_recognition.face_landmarks(rgb_frame)
+        return landmarks_list
+
+    def compare_two_faces(self, img1_bytes, img2_bytes):
+        """
+        Compares two faces and returns distance and Boolean match
+        """
+        # Load images
+        image1 = face_recognition.load_image_file(io.BytesIO(img1_bytes))
+        image2 = face_recognition.load_image_file(io.BytesIO(img2_bytes))
+        
+        # Get encodings
+        encodings1 = face_recognition.face_encodings(image1)
+        encodings2 = face_recognition.face_encodings(image2)
+        
+        if not encodings1 or not encodings2:
+            return None, "One or both images have no detectable faces."
+            
+        # Compare
+        dist = face_recognition.face_distance([encodings1[0]], encodings2[0])[0]
+        match = bool(dist <= self.tolerance)
+        
+        return {
+            "match": match,
+            "distance": round(float(dist), 4),
+            "confidence": round((1.0 - dist) * 100, 1)
+        }, None
