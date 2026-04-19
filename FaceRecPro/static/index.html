@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FaceRec Pro | Multi-Biometric Intelligence</title>
+    <title>FaceRec Pro | Biometric Intelligence Lab</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -19,187 +19,294 @@
             --text-muted: #94a3b8;
             --success: #10b981;
             --warning: #f59e0b;
+            --danger: #ef4444;
         }
+
+        @keyframes pulse-red { 0%, 100% { background: var(--bg); } 50% { background: #450a0a; } }
+        .alert-mode { animation: pulse-red 0.6s ease-in-out infinite; }
+        .engagement-bar { height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden; margin-top: 4px; }
+        .engagement-fill { height: 100%; background: var(--primary); transition: width 0.3s ease; }
+        
+        .lab-btn { background: transparent; color: var(--text-muted); border: none; font-weight: 800; cursor: pointer; transition: all 0.2s; padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.7rem; letter-spacing: 0.05em; }
+        .lab-btn.active { background: rgba(255,255,255,0.1); color: white; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2); }
+        .overlay-hud { position: absolute; inset: 0; pointer-events: none; z-index: 10; border-radius: 15px; }
+        
+        .toggle-switch { display: flex; align-items: center; gap: 0.75rem; cursor: pointer; padding: 0.5rem; border-radius: 8px; transition: background 0.2s; }
+        .toggle-switch:hover { background: rgba(255,255,255,0.05); }
+        .toggle-checkbox { display: none; }
+        .toggle-slider { width: 34px; height: 20px; background: rgba(255,255,255,0.1); border-radius: 20px; position: relative; transition: 0.3s; }
+        .toggle-slider::before { content: ""; position: absolute; width: 14px; height: 14px; background: white; border-radius: 50%; top: 3px; left: 3px; transition: 0.3s; }
+        .toggle-checkbox:checked + .toggle-slider { background: var(--primary); }
+        .toggle-checkbox:checked + .toggle-slider::before { left: 17px; }
     </style>
 </head>
 <body>
     <div class="sidebar">
-        <div class="logo">
-            <div class="logo-icon">F</div>
-            FaceRec Pro
-        </div>
-        <div class="nav-item active" data-tab="tab-dashboard">Live Recognition</div>
+        <div class="logo"><div class="logo-icon">F</div>FaceRec Pro</div>
+        <div class="nav-item active" data-tab="tab-dashboard">Research Hub</div>
         <div class="nav-item" data-tab="tab-compare">Comparison Lab</div>
         <div class="nav-item" data-tab="tab-landmarks">Feature Expert</div>
         <div class="nav-item" data-tab="tab-training">Training Center</div>
-        <div class="nav-item" data-tab="tab-history">Activity Log</div>
+        <div class="nav-item" data-tab="tab-history">Audit Log</div>
         
+        <div style="margin-top: 2rem; padding: 0.5rem;">
+            <label class="toggle-switch">
+                <input type="checkbox" id="landmark-toggle" class="toggle-checkbox">
+                <div class="toggle-slider"></div>
+                <span style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted);">Show Landmarks</span>
+            </label>
+        </div>
+
         <div style="margin-top: auto; padding-top: 2rem;">
             <div class="stat-card" style="padding: 1rem; background: var(--card-bg); border-radius: 12px; border: 1px solid var(--glass-border);">
-                <div class="stat-label" style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem;">System Status</div>
-                <div style="display: flex; align-items: center; gap: 0.5rem; color: var(--success); font-weight: 600; font-size: 0.85rem;">
+                <div class="stat-label" style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem;">Engine Status</div>
+                <div id="engine-status-val" style="display: flex; align-items: center; gap: 0.5rem; color: var(--success); font-weight: 600; font-size: 0.85rem;">
                     <div style="width: 8px; height: 8px; border-radius: 50%; background: var(--success);"></div>
-                    FastAPI Healthy
+                    FastAPI Active
                 </div>
             </div>
         </div>
     </div>
 
     <main class="main-content">
-        <!-- Live Recognition Tab -->
+        <!-- Dashboard Tab -->
         <section id="tab-dashboard" class="tab-content active">
             <div class="header">
                 <div>
-                    <h1 style="margin: 0; font-size: 2rem; font-weight: 800; letter-spacing: -0.025em;">Live Recognition Feed</h1>
-                    <p style="color: var(--text-muted); margin-top: 0.25rem;">Real-time biometric analysis & stream tracking</p>
+                    <h1 style="margin: 0; font-size: 2rem; font-weight: 800; letter-spacing: -0.025em;">Intelligence Research Hub</h1>
+                    <p style="color: var(--text-muted); margin-top: 0.25rem;">Multi-Biometric Laboratory & Forensic Analytics</p>
                 </div>
-                <div style="display: flex; gap: 1rem;">
+                <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
                     <div class="stat-card" style="padding: 0.75rem 1.25rem;">
-                        <div class="stat-label">Enrolled</div>
+                        <div class="stat-label">Identities</div>
                         <div id="enrolled-count-stat" class="stat-value" style="font-size: 1.5rem;">0</div>
                     </div>
+                    <div class="stat-card" style="padding: 0.75rem 1.25rem;">
+                        <div class="stat-label">Fusion presence</div>
+                        <div id="hub-fusion-val" class="stat-value" style="font-size: 1.5rem;">—</div>
+                    </div>
+                    <div class="stat-card" style="padding: 0.75rem 1.25rem; min-width: 120px;">
+                        <div class="stat-label">Safety band</div>
+                        <div id="hub-alert-val" class="stat-value" style="font-size: 0.95rem; font-weight: 700;">—</div>
+                    </div>
                 </div>
             </div>
 
             <div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 2rem; margin-top: 2rem;">
-                <div class="glass-card" style="padding: 1.5rem; position: relative;">
-                    <div style="border-radius: 12px; overflow: hidden; background: #000; position: relative; aspect-ratio: 16/9;">
-                        <img id="video-feed" src="/video_feed" alt="Live stream" style="width: 100%; height: 100%; object-fit: cover;">
-                        <div style="position: absolute; top: 1rem; right: 1rem; background: rgba(0,0,0,0.6); padding: 0.4rem 0.8rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600;">
-                            <span style="color: var(--success);">● LIVE</span>
+                <div class="glass-card" style="padding: 1.5rem; display: flex; flex-direction: column; min-height: 600px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                        <div style="display: flex; gap: 0.5rem; background: rgba(0,0,0,0.2); padding: 0.3rem; border-radius: 10px;">
+                            <button class="lab-btn active" data-lab="neuro" onclick="switchLab('neuro')">NEURO (EYE)</button>
+                            <button class="lab-btn" data-lab="psych" onclick="switchLab('psych')">PSYCH (EMO)</button>
+                            <button class="lab-btn" data-lab="cognitive" onclick="switchLab('cognitive')">COGNITIVE</button>
+                        </div>
+                        <div id="ai-latency-hud" style="font-family: monospace; font-size: 0.75rem; color: var(--success);">AI: 0ms</div>
+                    </div>
+
+                    <div id="lab-neuro" class="lab-content" style="position: relative; flex: 1;">
+                         <div style="border-radius: 15px; overflow: hidden; background: #000; aspect-ratio: 16/9; position: relative;">
+                            <img id="video-feed" src="/video_feed" alt="Live stream" style="width: 100%; height: 100%; object-fit: cover;">
+                            <canvas id="gaze-heatmap" class="overlay-hud" width="640" height="360"></canvas>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-top: 1rem;">
+                            <div class="stat-mini">
+                                <label>SACCADIC VELOCITY</label>
+                                <div id="saccadic-val" class="v-large">0.0</div>
+                            </div>
+                            <div class="stat-mini">
+                                <label>FIXATION (REL.)</label>
+                                <div id="gaze-val" class="v-mono">X: 0, Y: 0</div>
+                            </div>
+                            <div class="stat-mini">
+                                <label>GAZE STABILITY</label>
+                                <div id="gaze-stab-val" class="v-large">—</div>
+                            </div>
+                            <div class="stat-mini">
+                                <label>BLINKS / MIN</label>
+                                <div id="blink-bpm-val" class="v-large">0</div>
+                            </div>
+                            <div class="stat-mini">
+                                <label>HEAD YAW (°)</label>
+                                <div id="head-yaw-val" class="v-mono">0</div>
+                            </div>
+                            <div class="stat-mini">
+                                <label>SCREEN ATTENTION</label>
+                                <div id="attention-val" class="v-large">—</div>
+                            </div>
                         </div>
                     </div>
-                    
-                    <div style="margin-top: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
-                        <div style="display: flex; gap: 1rem;">
-                            <label class="btn" style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; background: rgba(255,255,255,0.05); padding: 0.5rem 1rem; border-radius: 12px; border: 1px solid var(--glass-border);">
-                                <input type="checkbox" id="landmark-toggle"> 
-                                <span style="font-weight: 600; font-size: 0.85rem;">Show Landmarks</span>
-                            </label>
+
+                    <div id="lab-psych" class="lab-content" style="display: none; flex: 1;">
+                        <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 1.5rem; height: 100%;">
+                            <div class="inner-card">
+                                <div class="lab-title">VALENCE-AROUSAL PLANE</div>
+                                <canvas id="va-plane" style="width: 100%; height: 250px;"></canvas>
+                                <div id="emotion-badge-large" class="badge-overlay">NEUTRAL</div>
+                            </div>
+                            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                                <div class="stat-mini">
+                                    <label>STRESS PROBE</label>
+                                    <div id="stress-score-val" class="v-large" style="color: var(--danger);">0%</div>
+                                    <div class="engagement-bar"><div id="stress-score-fill" class="engagement-fill" style="background: var(--danger);"></div></div>
+                                </div>
+                                <div class="stat-mini">
+                                    <label>EMOTION CONFIDENCE</label>
+                                    <div id="emotion-conf-val" class="v-large">0%</div>
+                                </div>
+                                <div class="stat-mini">
+                                    <label>MICRO-MOTION (MAR σ)</label>
+                                    <div id="micro-pulse-val" class="v-mono">0</div>
+                                </div>
+                            </div>
                         </div>
-                        <div style="display: flex; align-items: center; gap: 1rem; background: rgba(255,255,255,0.05); padding: 0.5rem 1rem; border-radius: 20px;">
-                            <span style="font-size: 0.85rem; color: var(--text-muted);">Sensitivity:</span>
-                            <input type="range" id="tolerance-slider" min="0.1" max="0.9" step="0.05" value="0.6" style="width: 100px;">
-                            <span id="tolerance-value" style="font-weight: 700; width: 30px; font-size: 0.85rem;">0.6</span>
+                    </div>
+
+                    <div id="lab-cognitive" class="lab-content" style="display: none; flex: 1;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                             <div class="stat-mini">
+                                <label>MENTAL LOAD</label>
+                                <div id="cognitive-load-val" class="v-giant">0%</div>
+                                <div class="engagement-bar"><div id="cognitive-load-fill" class="engagement-fill"></div></div>
+                            </div>
+                            <div class="stat-mini">
+                                <label>PERCLOS (DROWSINESS)</label>
+                                <div id="perclos-val" class="v-giant" style="color: var(--warning);">0%</div>
+                                <div class="engagement-bar"><div id="perclos-fill" class="engagement-fill" style="background: var(--warning);"></div></div>
+                            </div>
+                            <div class="stat-mini">
+                                <label>FATIGUE INDEX</label>
+                                <div id="fatigue-val" class="v-giant" style="color: var(--danger);">0%</div>
+                                <div class="engagement-bar"><div id="fatigue-fill" class="engagement-fill" style="background: var(--danger);"></div></div>
+                            </div>
+                        </div>
+                         <div style="margin-top: 2rem; background: rgba(0,0,0,0.2); padding: 1.5rem; border-radius: 15px; border: 1px dashed var(--glass-border); text-align: center;">
+                             <button onclick="startSecureGaze()" class="btn btn-primary">INITIATE SECURE-GAZE CHALLENGE</button>
+                             <div id="challenge-ui" style="display:none; margin-top: 1rem;">
+                                <div id="challenge-dot" style="width:20px; height:20px; background:var(--primary); border-radius:50%; margin: 0 auto; box-shadow: 0 0 15px var(--primary);"></div>
+                             </div>
                         </div>
                     </div>
                 </div>
 
                 <div class="glass-card" style="padding: 1.5rem; display: flex; flex-direction: column;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-                        <h3 style="margin: 0;">Detection Log</h3>
-                        <button class="btn" onclick="exportCSV()" style="font-size: 0.75rem; padding: 0.4rem 0.8rem; border: 1px solid var(--glass-border);">Export CSV</button>
-                    </div>
-                    <div id="history-log" style="flex: 1; overflow-y: auto; max-height: 500px; display: flex; flex-direction: column; gap: 0.75rem;">
-                        <!-- Populate via JS -->
-                    </div>
+                    <h3 style="margin: 0 0 1.5rem 0;">Forensic Discovery</h3>
+                    <div id="history-log" style="flex: 1; overflow-y: auto; max-height: 550px; display: flex; flex-direction: column; gap: 0.75rem;"></div>
                 </div>
             </div>
         </section>
 
-        <!-- Comparison Lab Tab -->
+        <!-- Tab: Comparison Lab -->
         <section id="tab-compare" class="tab-content">
-            <div class="header">
-                <div>
-                    <h1 style="margin: 0; font-size: 2rem; font-weight: 800;">Comparison Lab</h1>
-                    <p style="color: var(--text-muted);">Biometric identity verification and distance analysis</p>
+             <div class="header"><h1>Comparison Lab</h1><p>Side-by-side identity verification scan</p></div>
+             <div class="glass-card" style="padding: 2.5rem; margin-top: 2rem; display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; text-align: center;">
+                <div class="upload-zone" onclick="document.getElementById('file1').click()">
+                    <input type="file" id="file1" hidden accept="image/*">
+                    <img id="preview1" style="max-width: 100%; max-height: 100%; display: none; border-radius: 12px;">
+                    <div id="ph1">IDENTITY A SOURCE</div>
                 </div>
-            </div>
-            
-            <div class="glass-card" style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; padding: 3rem; margin-top: 2rem; text-align: center;">
-                <div class="upload-zone" id="compare-zone-1" style="border: 2px dashed var(--glass-border); border-radius: 20px; height: 350px; display: flex; align-items: center; justify-content: center; position: relative;">
-                    <input type="file" id="compare-input-1" hidden accept="image/*">
-                    <img id="compare-preview-1" style="max-width: 100%; max-height: 100%; display: none; border-radius: 12px;">
-                    <div id="compare-placeholder-1">
-                        <div style="font-size: 2.5rem; margin-bottom: 1rem;">👤</div>
-                        <p>Upload Identity A</p>
-                    </div>
+                <div class="upload-zone" onclick="document.getElementById('file2').click()">
+                    <input type="file" id="file2" hidden accept="image/*">
+                    <img id="preview2" style="max-width: 100%; max-height: 100%; display: none; border-radius: 12px;">
+                    <div id="ph2">IDENTITY B SOURCE</div>
                 </div>
-                <div class="upload-zone" id="compare-zone-2" style="border: 2px dashed var(--glass-border); border-radius: 20px; height: 350px; display: flex; align-items: center; justify-content: center; position: relative;">
-                    <input type="file" id="compare-input-2" hidden accept="image/*">
-                    <img id="compare-preview-2" style="max-width: 100%; max-height: 100%; display: none; border-radius: 12px;">
-                    <div id="compare-placeholder-2">
-                        <div style="font-size: 2.5rem; margin-bottom: 1rem;">👤</div>
-                        <p>Upload Identity B</p>
-                    </div>
+                <div style="grid-column: span 2;">
+                    <button id="compare-btn" class="btn btn-primary" style="padding: 1rem 3rem;">RUN VERIFICATION SCAN</button>
+                    <div id="compare-result" style="margin-top: 2rem; font-size: 1.25rem; font-weight: 800;"></div>
                 </div>
-            </div>
-            
-            <div style="text-align: center; margin-top: 2.5rem;">
-                <button id="compare-btn" class="btn btn-primary" style="padding: 1rem 4rem; font-size: 1.1rem; border-radius: 12px;">Run Verification Scan</button>
-                <div id="compare-result-container" style="margin-top: 3rem; display: none;">
-                    <div id="compare-badge" style="display: inline-block; padding: 0.5rem 1.5rem; border-radius: 30px; font-weight: 800; font-size: 1.25rem; margin-bottom: 1rem;">MATCH FOUND</div>
-                    <div id="compare-details" style="color: var(--text-muted); font-size: 1.1rem;"></div>
-                </div>
-            </div>
+             </div>
         </section>
 
-        <!-- Feature Expert Tab -->
+        <!-- Tab: Feature Expert — aligned video + mapped overlay (dlib-style mesh, gaze, fusion) -->
         <section id="tab-landmarks" class="tab-content">
             <div class="header">
+                <h1>Feature Expert</h1>
+                <p style="color: var(--text-muted); max-width: 720px;">68-point topology with <strong>contain-fit</strong> mapping to the live frame, bilateral gaze, mesh / vectors, and sparklines. Fusion index combines eye tracking, emotion confidence, head attention, and fatigue (V2 + emotion–eye integration pillars).</p>
+            </div>
+            <div class="glass-card" style="margin-top: 1.5rem; padding: 1.5rem; display: grid; grid-template-columns: 1fr 320px; gap: 1.5rem; align-items: start;">
                 <div>
-                    <h1 style="margin: 0; font-size: 2rem; font-weight: 800;">Feature Expert</h1>
-                    <p style="color: var(--text-muted);">Surgical landmark extraction and geometric mapping</p>
-                </div>
-            </div>
-            <div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 2rem; margin-top: 2rem;">
-                <div class="glass-card" style="padding: 1.5rem; text-align: center;">
-                    <div id="landmark-upload-zone" style="border: 2px dashed var(--glass-border); border-radius: 20px; height: 500px; display: flex; align-items: center; justify-content: center; position: relative; background: #000;">
-                        <input type="file" id="landmark-input" hidden accept="image/*">
-                        <canvas id="landmark-canvas" style="position: absolute; inset: 0; pointer-events: none; width: 100%; height: 100%;"></canvas>
-                        <img id="landmark-preview" style="max-width: 100%; max-height: 100%; display: none;">
-                        <div id="landmark-placeholder">
-                            <div style="font-size: 3rem; margin-bottom: 1rem;">🎯</div>
-                            <p>Drop image for biometric extraction</p>
-                        </div>
+                    <div id="expert-video-wrap" style="position: relative; aspect-ratio: 16/9; background: #000; border-radius: 14px; overflow: hidden;">
+                        <img id="expert-video-feed" src="/video_feed" alt="Live" style="width: 100%; height: 100%; object-fit: contain; display: block;">
+                        <canvas id="expert-overlay" style="position: absolute; left: 0; top: 0; width: 100%; height: 100%; pointer-events: none;"></canvas>
+                    </div>
+                    <div style="display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; margin-top: 1rem;">
+                        <label style="display: flex; align-items: center; gap: 0.4rem; font-size: 0.8rem; color: var(--text-muted); cursor: pointer;"><input type="checkbox" id="expert-draw-mesh" checked> Wire mesh</label>
+                        <label style="display: flex; align-items: center; gap: 0.4rem; font-size: 0.8rem; color: var(--text-muted); cursor: pointer;"><input type="checkbox" id="expert-draw-points" checked> Points</label>
+                        <label style="display: flex; align-items: center; gap: 0.4rem; font-size: 0.8rem; color: var(--text-muted); cursor: pointer;"><input type="checkbox" id="expert-draw-gaze" checked> Gaze ray</label>
+                        <label style="display: flex; align-items: center; gap: 0.4rem; font-size: 0.8rem; color: var(--text-muted);">Face <select id="expert-face-select" style="background: rgba(0,0,0,0.35); color: white; border: 1px solid var(--glass-border); border-radius: 8px; padding: 0.35rem 0.6rem;"></select></label>
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; margin-top: 1rem;">
+                        <div><div class="stat-label" style="font-size: 0.65rem; margin-bottom: 0.25rem;">EAR</div><canvas id="spark-ear" height="52" style="width: 100%; border-radius: 8px; background: rgba(0,0,0,0.35); display: block;"></canvas></div>
+                        <div><div class="stat-label" style="font-size: 0.65rem; margin-bottom: 0.25rem;">MAR</div><canvas id="spark-mar" height="52" style="width: 100%; border-radius: 8px; background: rgba(0,0,0,0.35); display: block;"></canvas></div>
+                        <div><div class="stat-label" style="font-size: 0.65rem; margin-bottom: 0.25rem;">Fusion</div><canvas id="spark-fusion" height="52" style="width: 100%; border-radius: 8px; background: rgba(0,0,0,0.35); display: block;"></canvas></div>
                     </div>
                 </div>
-                <div class="glass-card" style="padding: 1.5rem; display: flex; flex-direction: column;">
-                    <h3 style="margin-top: 0;">Biometric Map Data</h3>
-                    <div id="landmark-output" style="flex: 1; background: rgba(0,0,0,0.3); border-radius: 12px; padding: 1rem; font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: #10b981; overflow-y: auto;">
-                        // Waiting for image input...
+                <div style="display: flex; flex-direction: column; gap: 0.85rem;">
+                    <div style="background: rgba(0,0,0,0.25); border-radius: 12px; padding: 1rem; border: 1px solid var(--glass-border);">
+                        <div class="stat-label">Fusion presence</div>
+                        <div id="expert-fusion-val" style="font-size: 1.75rem; font-weight: 800; margin: 0.25rem 0;">—</div>
+                        <div class="engagement-bar"><div id="expert-fusion-fill" class="engagement-fill" style="width: 0%;"></div></div>
+                    </div>
+                    <div style="background: rgba(0,0,0,0.25); border-radius: 12px; padding: 1rem; border: 1px solid var(--glass-border); font-size: 0.8rem;">
+                        <div class="stat-label">Gaze symmetry</div>
+                        <div id="expert-gaze-sym" style="font-weight: 700; font-size: 1.1rem;">—</div>
+                        <div class="stat-label" style="margin-top: 0.5rem;">Vergence (|Δgx|)</div>
+                        <div id="expert-vergence" style="font-family: monospace;">—</div>
+                        <div class="stat-label" style="margin-top: 0.5rem;">EAR L / R</div>
+                        <div id="expert-ear-lr" style="font-family: monospace;">—</div>
+                    </div>
+                    <div style="background: rgba(0,0,0,0.25); border-radius: 12px; padding: 1rem; border: 1px solid var(--glass-border);">
+                        <div class="stat-label">Head pose (°)</div>
+                        <div id="expert-head-pose" style="font-family: monospace; font-size: 0.75rem; color: var(--text-muted);">—</div>
+                    </div>
+                    <div style="background: rgba(0,0,0,0.25); border-radius: 12px; padding: 1rem; border: 1px solid var(--glass-border);">
+                        <div class="stat-label">Alert band</div>
+                        <div id="expert-alert-val" style="font-weight: 800; font-size: 1rem;">—</div>
+                    </div>
+                    <div style="background: rgba(0,0,0,0.3); border-radius: 12px; padding: 1rem; flex: 1; min-height: 140px; overflow: auto;">
+                        <h4 style="margin: 0 0 0.5rem 0; font-size: 0.85rem;">Landmark JSON</h4>
+                        <div id="raw-coords" style="font-family: monospace; font-size: 0.65rem; color: var(--success); white-space: pre-wrap;">Awaiting stream…</div>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- Training Center Tab -->
+        <!-- Tab: Training Center -->
         <section id="tab-training" class="tab-content">
-            <h1>Training Center</h1>
+            <div class="header"><h1>Training Center</h1><p>Neural Enrollment & Face Training</p></div>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 2rem;">
-                <!-- Re-implementing the robust training UI -->
                 <div class="glass-card" style="padding: 2rem;">
-                    <h3>Enroll New Identity</h3>
-                    <div id="enroll-preview-container" style="background: #000; border-radius: 12px; height: 300px; display: flex; align-items: center; justify-content: center; margin: 1.5rem 0; overflow: hidden;">
-                        <img id="enroll-preview" style="max-width: 100%; max-height: 100%; display: none;">
-                        <p id="enroll-placeholder" style="color: var(--text-muted);">No image selected</p>
-                    </div>
-                    <input type="text" id="enroll-name" class="input-field" placeholder="Target Identity Name" style="width: 100%; margin-bottom: 1.5rem;">
-                    <div style="display: flex; gap: 1rem;">
-                        <button id="enroll-btn" class="btn btn-primary" style="flex: 1;">Enroll Identity</button>
-                        <button id="capture-remote-btn" class="btn" style="flex: 1; border: 1px solid var(--glass-border);">Remote Capture</button>
-                    </div>
+                    <h3>Enroll New Subject</h3>
+                    <form id="enroll-form" style="display: flex; flex-direction: column; gap: 1rem; margin-top: 1.5rem;">
+                        <input type="text" id="subject-name" placeholder="Subject Name" required style="background:rgba(0,0,0,0.2); border:1px solid var(--glass-border); color:white; padding:1rem; border-radius:10px;">
+                        <div class="upload-zone" style="height: 150px;" onclick="document.getElementById('subject-file').click()">
+                            <input type="file" id="subject-file" hidden required accept="image/*">
+                            <img id="enroll-preview-img" style="max-height: 100%; display: none; border-radius: 10px;">
+                            <div id="enroll-ph">SELECT REFERENCE IMAGE</div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">START NEURAL ENROLLMENT</button>
+                    </form>
+                    <div id="enroll-status" style="margin-top: 1rem; font-weight: 600;"></div>
                 </div>
                 <div class="glass-card" style="padding: 2rem;">
-                    <h3>Enrolled Database</h3>
-                    <div id="enrolled-list" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 1rem; margin-top: 1.5rem;">
-                        <!-- Database entries -->
-                    </div>
+                    <h3>Subject Database</h3>
+                    <div id="enrolled-list" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 1.5rem;"></div>
                 </div>
             </div>
         </section>
 
-        <!-- Activity Log Tab -->
+        <!-- Tab: Audit Log -->
         <section id="tab-history" class="tab-content">
-            <h1>Activity Log</h1>
-            <div class="glass-card" style="padding: 2rem; margin-top: 2rem;">
-                <div id="full-history-log" style="display: flex; flex-direction: column; gap: 1rem;">
-                    <!-- Full log list -->
+            <div class="header"><h1>Forensic Audit Log</h1><p>Historical Behavior & Identity Logs</p></div>
+            <div class="glass-card" style="margin-top: 2rem; padding: 1.5rem;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 2rem;">
+                    <h3>Historical Records</h3>
+                    <button id="download-csv-btn" class="btn" style="background:rgba(255,255,255,0.05); color: white;">DOWNLOAD FORENSIC CSV</button>
                 </div>
+                <div id="full-history-log" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem;"></div>
             </div>
         </section>
-    </main>
 
-    <script src="/static/script.js"></script>
+        <script src="/static/script.js"></script>
+    </main>
 </body>
 </html>

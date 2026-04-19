@@ -170,3 +170,58 @@ body {
 .log-name { font-weight: 600; }
 .log-time { font-size: 0.75rem; color: var(--text-muted); }
 .log-conf { color: var(--success); font-weight: 700; font-family: monospace; }
+
+/* --- Elite Biometric Lab Styles --- */
+.sub-tab {
+    padding: 0.5rem 1rem;
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    font-weight: 700;
+    border-radius: 8px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sub-tab:hover {
+    color: var(--text-base);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.sub-tab.active {
+    background: var(--primary);
+    color: white;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+.sub-tab-content {
+    animation: tabSlide 0.4s ease-out;
+}
+
+@keyframes tabSlide {
+    from { opacity: 0; transform: translateX(10px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+#va-plane {
+    cursor: crosshair;
+    transition: filter 0.3s;
+}
+
+#va-plane:hover {
+    filter: brightness(1.2);
+}
+
+/* Diagnostic Alerts */
+.environmental-warning {
+    background: var(--warning);
+    color: #000;
+    font-weight: 800;
+    padding: 0.2rem 1rem;
+    font-size: 0.7rem;
+    border-radius: 0 0 8px 8px;
+    animation: slideDown 0.3s;
+}
+
+@keyframes slideDown {
+    from { transform: translateY(-100%); }
+    to { transform: translateY(0); }
+}
