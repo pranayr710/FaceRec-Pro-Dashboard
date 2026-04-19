@@ -67,3 +67,8 @@ venv/
 FaceRecPro/database/*.sqlite
 FaceRecPro/uploads/known/*.jpg
 *.png
+
+# Large Data & Models Exclusions
+emotion_detector_from_scratch/data/
+emotion_detector_from_scratch/models/*.h5
+emotion_detector_from_scratch/env/

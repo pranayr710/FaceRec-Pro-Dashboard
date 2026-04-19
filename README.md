@@ -29,7 +29,7 @@ Using a 6-point 3D generic face model paired with OpenCV's `solvePnP` algorithm,
 
 ### 4. Fatigue Monitoring (PERCLOS)
 Implements the industrial Standard **PERCLOS** (Percentage of Eye Closure) to detect micro-sleeps and chronic fatigue.
-*   **Algorithm**: Soukupová & Čech (2016) EAR modeling.
+*   **Algorithm**: Advanced EAR modeling.
 *   **Alerts**: NOMINAL, ELEVATED, and HIGH_RISK states based on cumulative eye-closure duration.
 
 ---
@@ -40,9 +40,6 @@ Implements the industrial Standard **PERCLOS** (Percentage of Eye Closure) to de
 The **EAR** is used to monitor eye openness and detect blinks. It is calculated from six facial landmarks detected around each eye.
 
 $$ \text{EAR} = \frac{||p_2 - p_6|| + ||p_3 - p_5||}{2 ||p_1 - p_4||} $$
-
-> [!NOTE]
-> **Reference**: *Soukupová, T. and Čech, J., 2016.* [Real-Time Eye Blink Detection using Facial Landmarks](https://vision.fe.uni-lj.si/cvww2016/proceedings/papers/05.pdf).
 
 ### Mouth Aspect Ratio (MAR)
 Similar to EAR, the **MAR** measures the vertical opening of the mouth relative to its width, used to detect speech, yawning (Fatigue), or "Happy/Surprised" emotions.
