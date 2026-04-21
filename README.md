@@ -499,7 +499,7 @@ FaceRec-Pro-Dashboard/
 
 <div align="center">
 
-**FaceRec Pro Dashboard** — Built with ❤️ and a lot of EAR math
+**FaceRec Pro Dashboard** 
 
 [![GitHub](https://img.shields.io/badge/GitHub-pranayr710%2FFaceRec--Pro--Dashboard-181717?style=for-the-badge&logo=github)](https://github.com/pranayr710/FaceRec-Pro-Dashboard)
 
